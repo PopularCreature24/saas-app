@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ProductViewer } from '@/components/3d/product-viewer';
 import { DashboardCharts } from '@/components/dashboard/charts';
-import { motion } from 'framer-motion';
+import { StatSkeleton, CardSkeleton, ChartSkeleton } from '@/components/ui/skeleton';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FolderOpen, 
   CreditCard, 
@@ -117,8 +118,25 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-10 w-64 rounded-lg bg-white/5 animate-pulse" />
+            <div className="h-4 w-48 rounded bg-white/5 animate-pulse" />
+          </div>
+          <div className="h-11 w-36 rounded-xl bg-white/5 animate-pulse" />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <StatSkeleton key={i} />
+          ))}
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <CardSkeleton />
+          <ChartSkeleton />
+        </div>
       </div>
     );
   }

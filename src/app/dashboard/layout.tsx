@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
@@ -27,6 +27,18 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
+
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  enter: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+};
+
+const pageTransition = {
+  type: 'spring' as const,
+  stiffness: 300,
+  damping: 30,
+};
 
 const sidebarNavItems = [
   {
@@ -229,7 +241,18 @@ export default function DashboardLayout({
         </header>
 
         <main className="flex-1 p-6 md:p-8">
-          {children}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname}
+              initial="initial"
+              animate="enter"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>
