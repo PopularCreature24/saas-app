@@ -1,9 +1,10 @@
 'use client';
 
-import { Suspense, useRef } from 'react';
+import { Suspense, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Environment, Float, MeshDistortMaterial, Text3D, Center } from '@react-three/drei';
+import { OrbitControls, Environment, Float, MeshDistortMaterial, Center, Preload } from '@react-three/drei';
 import * as THREE from 'three';
+import { Loader2 } from 'lucide-react';
 
 function TorusKnot({ autoRotate = true }: { autoRotate?: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -59,25 +60,32 @@ function GeometricShapes() {
   );
 }
 
-function Particles() {
-  const count = 500;
-  const particlesRef = useRef<THREE.Points>(null);
-
+function generateParticlePositions(count: number): Float32Array {
   const positions = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     positions[i * 3] = (Math.random() - 0.5) * 10;
     positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
     positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
   }
+  return positions;
+}
 
+function Particles({ count = 500 }: { count?: number }) {
+  const particlesRef = useRef<THREE.Points>(null);
+  
+  const positions = useMemo(() => generateParticlePositions(count), [count]);
+  
   useFrame((state) => {
     if (particlesRef.current) {
       particlesRef.current.rotation.y = state.clock.elapsedTime * 0.05;
     }
   });
 
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const geometry = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return geo;
+  }, [positions]);
 
   return (
     <points ref={particlesRef} geometry={geometry}>
@@ -86,12 +94,40 @@ function Particles() {
   );
 }
 
-function LoadingFallback() {
+function Scene({ variant }: { variant: 'hero' | 'demo' | 'card' }) {
   return (
-    <mesh>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="#8b5cf6" wireframe />
-    </mesh>
+    <>
+      <color attach="background" args={['#09090b']} />
+      <ambientLight intensity={0.3} />
+      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
+      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#8b5cf6" />
+      
+      <Suspense fallback={null}>
+        <Center>
+          {variant === 'hero' ? <TorusKnot /> : <GeometricShapes />}
+        </Center>
+        <Environment preset="city" />
+        <Particles count={variant === 'card' ? 200 : 500} />
+      </Suspense>
+
+      <OrbitControls
+        enableZoom={variant !== 'card'}
+        enablePan={false}
+        autoRotate={variant === 'hero'}
+        autoRotateSpeed={0.5}
+        minDistance={3}
+        maxDistance={10}
+      />
+      <Preload all />
+    </>
+  );
+}
+
+function LoadingSpinner() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet-900/20 to-fuchsia-900/20">
+      <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+    </div>
   );
 }
 
@@ -104,32 +140,20 @@ export function ProductViewer({ variant = 'hero' }: ProductViewerProps) {
 
   return (
     <div className={`w-full ${height} rounded-xl overflow-hidden bg-gradient-to-br from-violet-900/20 to-fuchsia-900/20`}>
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 45 }}
-        className="touch-none"
-      >
-        <color attach="background" args={['#09090b']} />
-        <ambientLight intensity={0.3} />
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#8b5cf6" />
-        
-        <Suspense fallback={<LoadingFallback />}>
-          <Center>
-            {variant === 'hero' ? <TorusKnot /> : <GeometricShapes />}
-          </Center>
-          <Environment preset="city" />
-          <Particles />
-        </Suspense>
-
-        <OrbitControls
-          enableZoom={variant !== 'card'}
-          enablePan={false}
-          autoRotate={variant === 'hero'}
-          autoRotateSpeed={0.5}
-          minDistance={3}
-          maxDistance={10}
-        />
-      </Canvas>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Canvas
+          camera={{ position: [0, 0, 5], fov: 45 }}
+          className="touch-none"
+          gl={{ 
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance'
+          }}
+          dpr={[1, 2]}
+        >
+          <Scene variant={variant} />
+        </Canvas>
+      </Suspense>
     </div>
   );
 }

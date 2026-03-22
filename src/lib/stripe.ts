@@ -19,7 +19,7 @@ export const PLANS = [
       'Community support',
       '1GB storage',
     ],
-    tier: 'free' as const,
+    tier: 'FREE' as const,
   },
   {
     id: 'starter',
@@ -36,7 +36,7 @@ export const PLANS = [
       'Custom branding',
     ],
     stripePriceId: process.env.STRIPE_STARTER_PRICE_ID,
-    tier: 'starter' as const,
+    tier: 'STARTER' as const,
   },
   {
     id: 'pro',
@@ -55,7 +55,7 @@ export const PLANS = [
       'Analytics dashboard',
     ],
     stripePriceId: process.env.STRIPE_PRO_PRICE_ID,
-    tier: 'pro' as const,
+    tier: 'PRO' as const,
   },
   {
     id: 'enterprise',
@@ -74,7 +74,7 @@ export const PLANS = [
       'On-premise option',
     ],
     stripePriceId: process.env.STRIPE_ENTERPRISE_PRICE_ID,
-    tier: 'enterprise' as const,
+    tier: 'ENTERPRISE' as const,
   },
 ];
 
@@ -93,10 +93,15 @@ export async function createCheckoutSession(
         quantity: 1,
       },
     ],
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?success=true`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?cancelled=true`,
     metadata: {
       userId,
+    },
+    subscription_data: {
+      metadata: {
+        userId,
+      },
     },
   });
 
@@ -121,6 +126,11 @@ export async function cancelSubscription(subscriptionId: string) {
 export async function createPortalSession(customerId: string) {
   return stripe.billingPortal.sessions.create({
     customer: customerId,
-    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing`,
   });
+}
+
+export function getTierFromPriceId(priceId: string): string {
+  const plan = PLANS.find((p) => p.stripePriceId === priceId);
+  return plan?.tier || 'FREE';
 }

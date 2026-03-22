@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn, formatPrice } from '@/lib/utils';
-import { useAuth } from '@/lib/auth';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { PricingPlan } from '@/types';
 
@@ -16,8 +16,9 @@ interface PricingCardProps {
 }
 
 export function PricingCard({ plan, popular, currentPlan }: PricingCardProps) {
-  const { user, updateUser } = useAuth();
+  const { data: session } = useSession();
   const router = useRouter();
+  const user = session?.user;
 
   const handleSelectPlan = async () => {
     if (!user) {
@@ -25,8 +26,8 @@ export function PricingCard({ plan, popular, currentPlan }: PricingCardProps) {
       return;
     }
 
-    if (plan.tier === 'free') {
-      updateUser({ subscriptionTier: 'free' });
+    if (plan.tier === 'FREE') {
+      router.push('/dashboard');
       return;
     }
 

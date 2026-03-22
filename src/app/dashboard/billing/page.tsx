@@ -1,202 +1,209 @@
 'use client';
 
-import { useAuth } from '@/lib/auth';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 import { PLANS } from '@/lib/stripe';
-import { formatPrice } from '@/lib/utils';
-import { CreditCard, Check, ExternalLink, Download } from 'lucide-react';
+import { Loader2, Check, ExternalLink, CreditCard } from 'lucide-react';
+import { Suspense, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
-export default function BillingPage() {
-  const { user } = useAuth();
+function BillingContent() {
+  const { data: session, update } = useSession();
+  const searchParams = useSearchParams();
+  const [loading, setLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
 
-  const currentPlan = PLANS.find(plan => plan.tier === user?.subscriptionTier) || PLANS[0];
+  const success = searchParams.get('success');
+  const cancelled = searchParams.get('cancelled');
+
+  useEffect(() => {
+    if (success) {
+      toast.success('Subscription updated successfully!');
+      update();
+    }
+    if (cancelled) {
+      toast.info('Subscription update cancelled.');
+    }
+  }, [success, cancelled, update]);
+
+  const currentTier = session?.user?.subscriptionTier || 'FREE';
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const response = await fetch('/api/stripe/portal', {
+        method: 'POST',
+      });
+      const data = await response.json();
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error(data.error || 'Failed to open billing portal');
+      }
+    } catch {
+      toast.error('Failed to open billing portal');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  const handleSubscribe = async (priceId: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId }),
+      });
+      const data = await response.json();
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error(data.error || 'Failed to start checkout');
+      }
+    } catch {
+      toast.error('Failed to start checkout');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const tierColors: Record<string, string> = {
+    FREE: 'bg-gray-500',
+    STARTER: 'bg-blue-500',
+    PRO: 'bg-gradient-to-r from-violet-500 to-fuchsia-500',
+    ENTERPRISE: 'bg-gradient-to-r from-amber-500 to-orange-500',
+  };
+
+  const tierLabels: Record<string, string> = {
+    FREE: 'Free',
+    STARTER: 'Starter',
+    PRO: 'Pro',
+    ENTERPRISE: 'Enterprise',
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Billing</h1>
-        <p className="text-muted-foreground">Manage your subscription and payment methods</p>
+        <p className="text-muted-foreground">Manage your subscription and billing information.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Current Plan
-            </CardTitle>
-            <CardDescription>Your current subscription</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">{currentPlan.name}</p>
-                <p className="text-muted-foreground">{currentPlan.description}</p>
-              </div>
-              <Badge className="bg-gradient-to-r from-violet-500 to-fuchsia-500">
-                Active
+      <Card>
+        <CardHeader>
+          <CardTitle>Current Plan</CardTitle>
+          <CardDescription>Your current subscription details</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Badge className={tierColors[currentTier] || 'bg-gray-500'}>
+                {tierLabels[currentTier] || 'Free'}
               </Badge>
+              <span className="text-sm text-muted-foreground">
+                {session?.user?.subscriptionStatus === 'ACTIVE' 
+                  ? 'Active' 
+                  : session?.user?.subscriptionStatus === 'PAST_DUE' 
+                    ? 'Payment past due' 
+                    : 'No active subscription'}
+              </span>
             </div>
-            <Separator />
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Price</span>
-                <span className="font-medium">
-                  {formatPrice(currentPlan.price)}/{currentPlan.interval}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Billing Cycle</span>
-                <span className="font-medium">Monthly</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Next Billing Date</span>
-                <span className="font-medium">April 15, 2024</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="gap-2">
-            <a href="/api/stripe/portal" className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 hover:bg-muted hover:text-foreground w-full">
-              <ExternalLink className="h-4 w-4" />
-              Manage Subscription
-            </a>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Method</CardTitle>
-            <CardDescription>Your saved payment methods</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4 rounded-lg border p-4">
-              <div className="flex h-10 w-14 items-center justify-center rounded bg-muted">
-                <CreditCard className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium">Visa ending in 4242</p>
-                <p className="text-sm text-muted-foreground">Expires 12/2025</p>
-              </div>
-              <Badge variant="secondary">Default</Badge>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline">
-              <CreditCard className="mr-2 h-4 w-4" />
-              Add Payment Method
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Plan Comparison</CardTitle>
-          <CardDescription>Compare features across all plans</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="py-3 text-left font-medium">Feature</th>
-                  {PLANS.map((plan) => (
-                    <th key={plan.id} className="py-3 text-center font-medium">
-                      {plan.name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b">
-                  <td className="py-3">Projects</td>
-                  <td className="py-3 text-center">3</td>
-                  <td className="py-3 text-center">15</td>
-                  <td className="py-3 text-center">Unlimited</td>
-                  <td className="py-3 text-center">Unlimited</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3">Storage</td>
-                  <td className="py-3 text-center">1 GB</td>
-                  <td className="py-3 text-center">10 GB</td>
-                  <td className="py-3 text-center">100 GB</td>
-                  <td className="py-3 text-center">Unlimited</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3">Export Quality</td>
-                  <td className="py-3 text-center">720p</td>
-                  <td className="py-3 text-center">1080p</td>
-                  <td className="py-3 text-center">4K</td>
-                  <td className="py-3 text-center">4K</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3">Custom Branding</td>
-                  <td className="py-3 text-center">
-                    <span className="text-muted-foreground">—</span>
-                  </td>
-                  <td className="py-3 text-center">
-                    <Check className="mx-auto h-4 w-4 text-violet-500" />
-                  </td>
-                  <td className="py-3 text-center">
-                    <Check className="mx-auto h-4 w-4 text-violet-500" />
-                  </td>
-                  <td className="py-3 text-center">
-                    <Check className="mx-auto h-4 w-4 text-violet-500" />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-3">API Access</td>
-                  <td className="py-3 text-center">
-                    <span className="text-muted-foreground">—</span>
-                  </td>
-                  <td className="py-3 text-center">
-                    <span className="text-muted-foreground">—</span>
-                  </td>
-                  <td className="py-3 text-center">
-                    <Check className="mx-auto h-4 w-4 text-violet-500" />
-                  </td>
-                  <td className="py-3 text-center">
-                    <Check className="mx-auto h-4 w-4 text-violet-500" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            {currentTier !== 'FREE' && (
+              <Button 
+                variant="outline" 
+                onClick={handleManageSubscription}
+                disabled={portalLoading}
+              >
+                {portalLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                )}
+                Manage Subscription
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Billing History</CardTitle>
-          <CardDescription>View your past invoices</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[
-              { date: 'Mar 15, 2024', amount: 29, status: 'Paid' },
-              { date: 'Feb 15, 2024', amount: 29, status: 'Paid' },
-              { date: 'Jan 15, 2024', amount: 29, status: 'Paid' },
-            ].map((invoice, index) => (
-              <div key={index} className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <p className="font-medium">{invoice.date}</p>
-                  <p className="text-sm text-muted-foreground">Pro Plan</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Badge variant="secondary">{invoice.status}</Badge>
-                  <span className="font-medium">{formatPrice(invoice.amount)}</span>
-                  <Button variant="ghost" size="icon">
-                    <Download className="h-4 w-4" />
+      <div>
+        <h2 className="text-2xl font-semibold mb-4">Available Plans</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {PLANS.map((plan) => {
+            const isCurrentPlan = plan.tier === currentTier;
+            const isFree = plan.id === 'free';
+
+            return (
+              <Card
+                key={plan.id}
+                className={`relative ${isCurrentPlan ? 'border-violet-500 shadow-lg' : ''}`}
+              >
+                {isCurrentPlan && (
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-500">
+                    Current Plan
+                  </Badge>
+                )}
+                <CardHeader>
+                  <CardTitle>{plan.name}</CardTitle>
+                  <CardDescription>{plan.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold">
+                      ${plan.price}
+                    </span>
+                    <span className="text-muted-foreground">/{plan.interval}</span>
+                  </div>
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-violet-500 shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full"
+                    variant={isCurrentPlan ? 'secondary' : 'default'}
+                    disabled={isCurrentPlan || loading}
+                    onClick={() => plan.stripePriceId && handleSubscribe(plan.stripePriceId)}
+                  >
+                    {loading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : isCurrentPlan ? (
+                      'Current Plan'
+                    ) : isFree ? (
+                      'Free'
+                    ) : (
+                      <>
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Subscribe
+                      </>
+                    )}
                   </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
     </div>
+  );
+}
+
+export default function BillingPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <BillingContent />
+    </Suspense>
   );
 }

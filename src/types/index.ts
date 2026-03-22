@@ -5,7 +5,7 @@ export interface User {
   image?: string;
   createdAt: Date;
   subscriptionStatus: 'active' | 'inactive' | 'cancelled';
-  subscriptionTier: 'free' | 'starter' | 'pro' | 'enterprise';
+  subscriptionTier: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
 }
 
 export interface Product {
@@ -14,7 +14,7 @@ export interface Product {
   description: string;
   price: number;
   features: string[];
-  tier: 'free' | 'starter' | 'pro' | 'enterprise';
+  tier: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
 }
 
 export interface PricingPlan {
@@ -25,27 +25,52 @@ export interface PricingPlan {
   interval: 'month' | 'year';
   features: string[];
   stripePriceId?: string;
-  tier: 'free' | 'starter' | 'pro' | 'enterprise';
+  tier: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
 }
 
 export interface Project {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   modelUrl?: string;
   thumbnail?: string;
   createdAt: Date;
   updatedAt: Date;
   userId: string;
+  views: number;
 }
 
 export interface Subscription {
   id: string;
   userId: string;
   stripeCustomerId: string;
-  stripeSubscriptionId: string;
-  status: 'active' | 'inactive' | 'cancelled' | 'past_due';
-  tier: 'free' | 'starter' | 'pro' | 'enterprise';
+  stripeSubscriptionId?: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'CANCELLED' | 'PAST_DUE';
+  tier: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
   currentPeriodStart: Date;
   currentPeriodEnd: Date;
 }
+
+export interface DashboardStats {
+  totalProjects: number;
+  totalViews: number;
+  storageUsed: number;
+  currentTier: string;
+  projectsChange: number;
+  viewsChange: number;
+}
+
+export interface ChartData {
+  name: string;
+  value: number;
+  date?: string;
+}
+
+export interface ViewData {
+  date: string;
+  views: number;
+  projects: number;
+}
+
+export type SubscriptionTier = 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+export type SubscriptionStatus = 'ACTIVE' | 'INACTIVE' | 'CANCELLED' | 'PAST_DUE';

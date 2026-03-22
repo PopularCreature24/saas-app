@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, FolderOpen, MoreHorizontal, Trash2, Copy } from 'lucide-react';
+import { Plus, Search, FolderOpen, MoreHorizontal, Trash2, Copy, Loader2, Eye } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,25 +17,114 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
-const projects = [
-  { id: '1', name: 'Product Showcase', description: 'E-commerce product visualization', views: 234, createdAt: 'Mar 15, 2024' },
-  { id: '2', name: 'Architecture Model', description: 'Modern house design', views: 156, createdAt: 'Mar 12, 2024' },
-  { id: '3', name: 'Character Design', description: '3D character for game', views: 89, createdAt: 'Mar 10, 2024' },
-  { id: '4', name: 'Furniture Collection', description: 'Living room furniture set', views: 312, createdAt: 'Mar 8, 2024' },
-  { id: '5', name: 'Jewelry Display', description: 'Ring and necklace showcase', views: 178, createdAt: 'Mar 5, 2024' },
-  { id: '6', name: 'Automotive Concept', description: 'Concept car design', views: 445, createdAt: 'Mar 1, 2024' },
-];
+interface Project {
+  id: string;
+  name: string;
+  description: string | null;
+  thumbnail: string | null;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function ProjectsPage() {
   const [search, setSearch] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectDescription, setNewProjectDescription] = useState('');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch('/api/projects');
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) {
+      toast.error('Project name is required');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newProjectName,
+          description: newProjectDescription,
+        }),
+      });
+
+      if (response.ok) {
+        const project = await response.json();
+        toast.success('Project created successfully!');
+        setIsCreateOpen(false);
+        setNewProjectName('');
+        setNewProjectDescription('');
+        router.push(`/dashboard/projects/${project.id}`);
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to create project');
+      }
+    } catch {
+      toast.error('Failed to create project');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    setDeleting(projectId);
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('Project deleted');
+        setProjects(projects.filter(p => p.id !== projectId));
+      } else {
+        toast.error('Failed to delete project');
+      }
+    } catch {
+      toast.error('Failed to delete project');
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   const filteredProjects = projects.filter(project =>
     project.name.toLowerCase().includes(search.toLowerCase()) ||
-    project.description.toLowerCase().includes(search.toLowerCase())
+    (project.description && project.description.toLowerCase().includes(search.toLowerCase()))
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -44,10 +134,10 @@ export default function ProjectsPage() {
           <p className="text-muted-foreground">Manage your 3D projects</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger className="inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 bg-primary text-primary-foreground h-8 gap-1.5 px-2.5">
+          <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             New Project
-          </DialogTrigger>
+          </Button>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Project</DialogTitle>
@@ -55,21 +145,32 @@ export default function ProjectsPage() {
                 Enter a name for your new 3D project.
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4">
-              <Label htmlFor="name">Project Name</Label>
-              <Input
-                id="name"
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-                placeholder="My Awesome Project"
-                className="mt-2"
-              />
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Project Name</Label>
+                <Input
+                  id="name"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  placeholder="My Awesome Project"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description (optional)</Label>
+                <Input
+                  id="description"
+                  value={newProjectDescription}
+                  onChange={(e) => setNewProjectDescription(e.target.value)}
+                  placeholder="A brief description of your project"
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => setIsCreateOpen(false)}>
+              <Button onClick={handleCreateProject} disabled={creating}>
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Project
               </Button>
             </DialogFooter>
@@ -97,14 +198,18 @@ export default function ProjectsPage() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <CardTitle className="text-base">{project.name}</CardTitle>
-                  <CardDescription className="text-xs">{project.description}</CardDescription>
+                  <CardDescription className="text-xs">
+                    {project.description || 'No description'}
+                  </CardDescription>
                 </div>
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 h-8 w-8 hover:bg-muted hover:text-foreground">
-                    <MoreHorizontal className="h-4 w-4" />
+                  <DropdownMenuTrigger>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${project.id}`)}>
                       <FolderOpen className="mr-2 h-4 w-4" />
                       Open
                     </DropdownMenuItem>
@@ -113,17 +218,26 @@ export default function ProjectsPage() {
                       Duplicate
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem 
+                      className="text-destructive"
+                      onClick={() => handleDeleteProject(project.id)}
+                      disabled={deleting === project.id}
+                    >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
+                      {deleting === project.id ? 'Deleting...' : 'Delete'}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </CardHeader>
             <CardFooter className="p-4 pt-0 flex items-center justify-between">
-              <Badge variant="secondary">{project.views} views</Badge>
-              <span className="text-xs text-muted-foreground">{project.createdAt}</span>
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Eye className="h-3 w-3" />
+                {project.views} views
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                {new Date(project.updatedAt).toLocaleDateString()}
+              </span>
             </CardFooter>
           </Card>
         ))}
@@ -132,8 +246,18 @@ export default function ProjectsPage() {
       {filteredProjects.length === 0 && (
         <div className="text-center py-12">
           <FolderOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">No projects found</h3>
-          <p className="text-muted-foreground">Try adjusting your search</p>
+          <h3 className="text-lg font-medium mb-2">
+            {search ? 'No projects found' : 'No projects yet'}
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            {search ? 'Try adjusting your search' : 'Create your first project to get started'}
+          </p>
+          {!search && (
+            <Button onClick={() => setIsCreateOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Project
+            </Button>
+          )}
         </div>
       )}
     </div>

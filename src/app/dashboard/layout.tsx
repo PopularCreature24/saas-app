@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/lib/auth';
+import { useSession, signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
@@ -55,8 +55,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
+  
+  const user = session?.user;
 
   return (
     <div className="flex min-h-screen">
@@ -94,14 +96,14 @@ export default function DashboardLayout({
         <div className="border-t p-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={user?.image} alt={user?.name || ''} />
+              <AvatarImage src={user?.image || undefined} alt={user?.name || ''} />
               <AvatarFallback>{user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user?.name}</p>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => logout()}>
+            <Button variant="ghost" size="icon" onClick={() => signOut()}>
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
@@ -148,7 +150,7 @@ export default function DashboardLayout({
           <DropdownMenu>
             <DropdownMenuTrigger className="ml-auto rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={user?.image} alt={user?.name || ''} />
+<AvatarImage src={user?.image || undefined} alt={user?.name || ''} />
                 <AvatarFallback>{user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
@@ -164,7 +166,7 @@ export default function DashboardLayout({
                 <Link href="/dashboard/settings">Settings</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => logout()} className="text-destructive">
+              <DropdownMenuItem onClick={() => signOut()} className="text-destructive">
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>

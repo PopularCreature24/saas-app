@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useAuth } from '@/lib/auth';
+import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -15,7 +15,7 @@ import { Menu, X, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 export function Header() {
-  const { user, logout } = useAuth();
+  const { data: session, status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -43,19 +43,21 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          {user ? (
+          {status === 'loading' ? (
+            <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+          ) : session ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="relative flex h-9 w-9 items-center justify-center rounded-full">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={user.image} alt={user.name} />
-                  <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  <AvatarImage src={session.user?.image || undefined} alt={session.user?.name || ''} />
+                  <AvatarFallback>{session.user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="flex items-center justify-start gap-2 p-2">
                   <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                    <p className="font-medium">{session.user?.name}</p>
+                    <p className="text-xs text-muted-foreground">{session.user?.email}</p>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
@@ -66,7 +68,10 @@ export function Header() {
                   <Link href="/dashboard/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => logout()} className="text-destructive">
+                <DropdownMenuItem 
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="text-destructive cursor-pointer"
+                >
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -99,10 +104,10 @@ export function Header() {
             <Link href="/#demo" className="text-sm font-medium py-2">Demo</Link>
           </nav>
           <div className="flex flex-col space-y-2 pt-4 border-t">
-            {user ? (
+            {session ? (
               <>
                 <Link href="/dashboard" className="text-sm font-medium py-2">Dashboard</Link>
-                <Button variant="ghost" onClick={() => logout()} className="justify-start">Log out</Button>
+                <Button variant="ghost" onClick={() => signOut({ callbackUrl: '/' })} className="justify-start">Log out</Button>
               </>
             ) : (
               <>
