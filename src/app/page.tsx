@@ -93,14 +93,16 @@ export default function HomePage() {
                 Perfect for e-commerce, presentations, and creative projects.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" asChild className="bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:opacity-90">
-                  <Link href="/auth/register">
+                <Link href="/auth/register">
+                  <Button size="lg" className="bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:opacity-90">
                     Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link href="/#demo">View Demo</Link>
-                </Button>
+                  </Button>
+                </Link>
+                <Link href="/#demo">
+                  <Button size="lg" variant="outline">
+                    View Demo
+                  </Button>
+                </Link>
               </div>
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
@@ -224,11 +226,11 @@ export default function HomePage() {
           <p className="text-white/80 max-w-2xl mx-auto text-lg mb-8">
             Join thousands of creators using Nexus3D to showcase their 3D work.
           </p>
-          <Button size="lg" variant="secondary" asChild>
-            <Link href="/auth/register">
+          <Link href="/auth/register">
+            <Button size="lg" variant="secondary">
               Start Free Today <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
       </section>
     </div>

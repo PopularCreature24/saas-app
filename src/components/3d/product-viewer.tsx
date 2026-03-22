@@ -76,16 +76,11 @@ function Particles() {
     }
   });
 
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
   return (
-    <points ref={particlesRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
+    <points ref={particlesRef} geometry={geometry}>
       <pointsMaterial size={0.02} color="#8b5cf6" transparent opacity={0.6} />
     </points>
   );

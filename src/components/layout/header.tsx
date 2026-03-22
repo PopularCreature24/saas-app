@@ -45,13 +45,11 @@ export function Header() {
         <div className="hidden md:flex items-center gap-4">
           {user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.image} alt={user.name} />
-                    <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                </Button>
+              <DropdownMenuTrigger className="relative flex h-9 w-9 items-center justify-center rounded-full">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={user.image} alt={user.name} />
+                  <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="flex items-center justify-start gap-2 p-2">
@@ -61,10 +59,10 @@ export function Header() {
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem>
                   <Link href="/dashboard">Dashboard</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem>
                   <Link href="/dashboard/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -75,12 +73,12 @@ export function Header() {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" asChild>
-                <Link href="/auth/login">Log in</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/auth/register">Get Started</Link>
-              </Button>
+              <Link href="/auth/login">
+                <Button variant="ghost">Log in</Button>
+              </Link>
+              <Link href="/auth/register">
+                <Button>Get Started</Button>
+              </Link>
             </>
           )}
         </div>
@@ -109,9 +107,9 @@ export function Header() {
             ) : (
               <>
                 <Link href="/auth/login" className="text-sm font-medium py-2">Log in</Link>
-                <Button asChild>
-                  <Link href="/auth/register">Get Started</Link>
-                </Button>
+                <Link href="/auth/register">
+                  <Button>Get Started</Button>
+                </Link>
               </>
             )}
           </div>

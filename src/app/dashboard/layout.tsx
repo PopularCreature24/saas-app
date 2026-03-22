@@ -112,10 +112,8 @@ export default function DashboardLayout({
       <div className="flex flex-1 flex-col">
         <header className="flex h-16 items-center gap-4 border-b bg-card px-6 md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
+            <SheetTrigger className="inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 h-8 w-8 hover:bg-muted hover:text-foreground">
+              <Menu className="h-5 w-5" />
             </SheetTrigger>
             <SheetContent side="left" className="w-64">
               <div className="flex h-16 items-center border-b">
@@ -148,13 +146,11 @@ export default function DashboardLayout({
           </Sheet>
           
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="ml-auto h-9 w-9 rounded-full">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={user?.image} alt={user?.name || ''} />
-                  <AvatarFallback>{user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
-              </Button>
+            <DropdownMenuTrigger className="ml-auto rounded-full">
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={user?.image} alt={user?.name || ''} />
+                <AvatarFallback>{user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <div className="flex items-center justify-start gap-2 p-2">
@@ -164,7 +160,7 @@ export default function DashboardLayout({
                 </div>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem>
                 <Link href="/dashboard/settings">Settings</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

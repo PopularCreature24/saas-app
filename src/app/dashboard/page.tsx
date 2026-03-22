@@ -13,7 +13,6 @@ import {
   ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
-import { formatPrice } from '@/lib/utils';
 
 const recentProjects = [
   { id: '1', name: 'Product Showcase', updatedAt: '2 hours ago' },
@@ -38,12 +37,12 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold">Welcome back, {user?.name}</h1>
           <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your projects.</p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/projects/new">
+        <Link href="/dashboard/projects/new">
+          <Button>
             <Plus className="mr-2 h-4 w-4" />
             New Project
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -113,18 +112,18 @@ export default function DashboardPage() {
                     <p className="text-xs text-muted-foreground">{project.updatedAt}</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" asChild>
-                  <Link href={`/dashboard/projects/${project.id}`}>
+                <Link href={`/dashboard/projects/${project.id}`}>
+                  <Button variant="ghost" size="icon">
                     <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
               </div>
             ))}
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/dashboard/projects">
+            <Link href="/dashboard/projects" className="w-full">
+              <Button variant="outline" className="w-full">
                 View All Projects
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 

@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { headers } from 'next/headers';
 
 export async function POST(request: Request) {
   const body = await request.text();
-  const signature = headers().get('Stripe-Signature') as string;
+  const signature = request.headers.get('stripe-signature') as string;
 
   let event;
 
@@ -24,28 +23,22 @@ export async function POST(request: Request) {
 
   switch (event.type) {
     case 'checkout.session.completed':
-      const checkoutSession = event.data.object;
-      console.log('Checkout completed:', checkoutSession);
+      console.log('Checkout completed:', event.data.object);
       break;
     case 'customer.subscription.created':
-      const subscription = event.data.object;
-      console.log('Subscription created:', subscription);
+      console.log('Subscription created:', event.data.object);
       break;
     case 'customer.subscription.updated':
-      const updatedSubscription = event.data.object;
-      console.log('Subscription updated:', updatedSubscription);
+      console.log('Subscription updated:', event.data.object);
       break;
     case 'customer.subscription.deleted':
-      const deletedSubscription = event.data.object;
-      console.log('Subscription deleted:', deletedSubscription);
+      console.log('Subscription deleted:', event.data.object);
       break;
     case 'invoice.payment_succeeded':
-      const invoice = event.data.object;
-      console.log('Invoice paid:', invoice);
+      console.log('Invoice paid:', event.data.object);
       break;
     case 'invoice.payment_failed':
-      const failedInvoice = event.data.object;
-      console.log('Invoice payment failed:', failedInvoice);
+      console.log('Invoice payment failed:', event.data.object);
       break;
     default:
       console.log(`Unhandled event type: ${event.type}`);

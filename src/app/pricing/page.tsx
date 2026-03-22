@@ -9,12 +9,12 @@ export default function PricingPage() {
     <div className="min-h-screen py-20">
       <div className="container px-4">
         <div className="mb-12">
-          <Button variant="ghost" asChild className="mb-4">
-            <Link href="/">
+          <Link href="/">
+            <Button variant="ghost" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Home
-            </Link>
-          </Button>
+            </Button>
+          </Link>
           <h1 className="text-4xl font-bold text-center mb-4">
             Simple, Transparent Pricing
           </h1>

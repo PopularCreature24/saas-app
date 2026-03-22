@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { PLANS, formatPrice } from '@/lib/stripe';
+import { PLANS } from '@/lib/stripe';
+import { formatPrice } from '@/lib/utils';
 import { CreditCard, Check, ExternalLink, Download } from 'lucide-react';
 
 export default function BillingPage() {
@@ -58,12 +59,10 @@ export default function BillingPage() {
             </div>
           </CardContent>
           <CardFooter className="gap-2">
-            <Button variant="outline" asChild>
-              <a href="/api/stripe/portal" target="_blank">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Manage Subscription
-              </a>
-            </Button>
+            <a href="/api/stripe/portal" className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 hover:bg-muted hover:text-foreground w-full">
+              <ExternalLink className="h-4 w-4" />
+              Manage Subscription
+            </a>
           </CardFooter>
         </Card>
 
