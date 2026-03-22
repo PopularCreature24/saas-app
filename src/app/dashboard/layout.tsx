@@ -177,7 +177,7 @@ export default function DashboardLayout({
 
       {/* Mobile Header */}
       <div className="flex flex-1 flex-col md:pl-72">
-        <header className="flex h-16 items-center gap-4 glass-effect border-b border-white/10 px-6 md:hidden">
+        <header className="flex h-16 items-center gap-4 glass-effect border-b border-white/10 px-4 md:px-6 md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger className="inline-flex shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium transition-all hover:bg-white/10 focus:outline-none">
               <Menu className="h-5 w-5" />

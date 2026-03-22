@@ -191,15 +191,15 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       <motion.div 
-        className="flex items-center justify-between"
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-white to-muted-foreground bg-clip-text">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-white to-muted-foreground bg-clip-text">
             Welcome back, {session?.user?.name?.split(' ')[0]}
           </h1>
           <p className="text-muted-foreground mt-1">Here&apos;s what&apos;s happening with your projects.</p>
@@ -207,9 +207,10 @@ export default function DashboardPage() {
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          className="w-full sm:w-auto"
         >
           <Link href="/dashboard/projects/new">
-            <Button className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-500/25">
+            <Button className="w-full sm:w-auto bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-500/25">
               <Plus className="mr-2 h-4 w-4" />
               New Project
             </Button>
@@ -217,7 +218,7 @@ export default function DashboardPage() {
         </motion.div>
       </motion.div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -228,7 +229,7 @@ export default function DashboardPage() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
             >
-              <Card className="relative overflow-hidden glass-card hover:border-white/20 transition-all duration-300">
+              <Card className="relative overflow-hidden glass-effect rounded-2xl hover:border-white/20 transition-all duration-300">
                 <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-5`} />
                 <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
                   <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
@@ -242,7 +243,7 @@ export default function DashboardPage() {
                       {tierLabels[stats.currentTier] || 'Free'}
                     </Badge>
                   ) : (
-                    <div className="text-3xl font-bold">
+                    <div className="text-2xl sm:text-3xl font-bold">
                       <AnimatedCounter 
                         value={stat.value} 
                         format={stat.format}
@@ -277,7 +278,7 @@ export default function DashboardPage() {
       )}
 
       <motion.div 
-        className="grid gap-6 lg:grid-cols-2"
+        className="grid gap-4 md:gap-6 md:grid-cols-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}

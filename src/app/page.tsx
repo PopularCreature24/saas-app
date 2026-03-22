@@ -105,7 +105,7 @@ function GradientOrbs() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <motion.div
-        className="absolute w-[800px] h-[800px] rounded-full"
+        className="absolute w-[800px] h-[800px] rounded-full hidden md:block"
         style={{
           background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)',
           x: orb1X,
@@ -117,7 +117,7 @@ function GradientOrbs() {
         }}
       />
       <motion.div
-        className="absolute w-[600px] h-[600px] rounded-full"
+        className="absolute w-[600px] h-[600px] rounded-full hidden md:block"
         style={{
           background: 'radial-gradient(circle, rgba(217, 70, 239, 0.12) 0%, transparent 70%)',
           x: orb2X,
@@ -136,7 +136,7 @@ function FloatingShapes() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <motion.div
-        className="absolute top-1/4 -left-20 w-40 h-40 border border-violet-500/20 rounded-full"
+        className="absolute top-1/4 -left-20 w-40 h-40 border border-violet-500/20 rounded-full hidden lg:block"
         animate={{
           y: [0, -30, 0],
           rotate: [0, 180, 360],
@@ -144,7 +144,7 @@ function FloatingShapes() {
         transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
       />
       <motion.div
-        className="absolute bottom-1/3 -right-10 w-60 h-60 border border-fuchsia-500/10 rounded-full"
+        className="absolute bottom-1/3 -right-10 w-60 h-60 border border-fuchsia-500/10 rounded-full hidden lg:block"
         animate={{
           y: [0, 40, 0],
           rotate: [360, 180, 0],
@@ -152,7 +152,7 @@ function FloatingShapes() {
         transition={{ duration: 25, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
       />
       <motion.div
-        className="absolute top-1/2 right-1/4 w-32 h-32 border border-cyan-500/10"
+        className="absolute top-1/2 right-1/4 w-32 h-32 border border-cyan-500/10 hidden md:block"
         animate={{
           y: [0, -20, 0],
           rotate: [45, 90, 45],
@@ -160,7 +160,7 @@ function FloatingShapes() {
         transition={{ duration: 15, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute bottom-1/4 left-1/3 w-20 h-20 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 rounded-lg blur-xl"
+        className="absolute bottom-1/4 left-1/3 w-20 h-20 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 rounded-lg blur-xl hidden md:block"
         animate={{
           y: [0, -50, 0],
           x: [0, 30, 0],
@@ -169,7 +169,7 @@ function FloatingShapes() {
         transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute top-1/3 right-1/3 w-16 h-16 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 rounded-full blur-lg"
+        className="absolute top-1/3 right-1/3 w-16 h-16 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 rounded-full blur-lg hidden md:block"
         animate={{
           y: [0, 40, 0],
           x: [0, -20, 0],
